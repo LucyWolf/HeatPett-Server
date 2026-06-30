@@ -108,6 +108,52 @@ class App(tk.Tk):
         self._tick()
         if self._cfg.get("auto_connect") and self._port_var.get():
             self.after(300, self._connect)
+        if os.name == "posix":
+            self.after(800, self._check_linux_serial_perms)
+
+    # ── Linux serial port permissions ────────────────────────────────────────
+    def _check_linux_serial_perms(self):
+        udev_rule = "/etc/udev/rules.d/99-headpat.rules"
+        if os.path.exists(udev_rule):
+            return
+        import grp, subprocess
+        try:
+            in_dialout = grp.getgrnam("dialout").gr_gid in os.getgroups()
+        except KeyError:
+            in_dialout = False
+        if in_dialout:
+            return
+        if not tk.messagebox.askyesno(
+            "Serieller Port",
+            "Für den Dongle wird eine udev-Regel benötigt.\n\n"
+            "Jetzt einrichten? (Einmalig, erfordert Admin-Passwort)\n\n"
+            "Danach den Dongle neu einstecken.",
+            parent=self
+        ):
+            return
+        rule = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="239a", TAG+="uaccess"\n'
+        try:
+            result = subprocess.run(
+                ["pkexec", "sh", "-c",
+                 f"tee {udev_rule} && udevadm control --reload-rules && udevadm trigger"],
+                input=rule.encode(), capture_output=True
+            )
+            if result.returncode == 0:
+                tk.messagebox.showinfo(
+                    "Fertig",
+                    "udev-Regel eingerichtet.\nBitte den Dongle neu einstecken.",
+                    parent=self
+                )
+            else:
+                tk.messagebox.showerror("Fehler", "Konnte udev-Regel nicht erstellen.", parent=self)
+        except FileNotFoundError:
+            tk.messagebox.showerror(
+                "Fehler",
+                "pkexec nicht gefunden.\nFühre manuell aus:\n"
+                f'echo \'{rule.strip()}\' | sudo tee {udev_rule}\n'
+                "sudo udevadm control --reload-rules && sudo udevadm trigger",
+                parent=self
+            )
 
     # ── Config persistence ───────────────────────────────────────────────────
     def _load_config(self):

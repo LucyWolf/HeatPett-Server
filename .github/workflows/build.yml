@@ -87,6 +87,9 @@ jobs:
           #!/bin/bash
           SELF=$(readlink -f "$0")
           HERE=${SELF%/*}
+          if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$DISPLAY" ]; then
+              export DISPLAY=:0
+          fi
           exec "$HERE/HeadpatServer/HeadpatServer" "$@"
           EOF
           chmod +x AppDir/AppRun
