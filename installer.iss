@@ -20,7 +20,7 @@ WizardStyle=modern
 SetupIconFile=icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesInstallIn64BitMode=x64compatible
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
