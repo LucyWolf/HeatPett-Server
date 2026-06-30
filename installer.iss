@@ -1,8 +1,8 @@
 ; Headpat Server Installer
-#define MyAppName "Headpat Server"
+#define MyAppName "HeatPett Server"
 #define MyAppVersion "2.3"
-#define MyAppPublisher "Headpat"
-#define MyAppExeName "Headpat Server.exe"
+#define MyAppPublisher "HeatPett"
+#define MyAppExeName "HeatPett Server.exe"
 
 [Setup]
 AppId={{8C2B4F1A-6E3D-4A7B-9F2C-1D5E8A3B7C9D}
@@ -31,7 +31,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "autostart"; Description: "Beim Windows-Start automatisch ausführen"; GroupDescription: "Optionen"; Flags: unchecked
 
 [Files]
-Source: "dist\Headpat Server.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\HeatPett Server.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

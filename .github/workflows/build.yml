@@ -27,7 +27,7 @@ jobs:
         run: pip install pyserial python-osc pyinstaller
 
       - name: Build exe with PyInstaller
-        run: pyinstaller --onefile --windowed --icon=icon.ico --name="Headpat Server" heatpett_server.py
+        run: pyinstaller --onefile --windowed --icon=icon.ico --name="HeatPett Server" heatpett_server.py
 
       - name: Install Inno Setup
         run: choco install innosetup -y
