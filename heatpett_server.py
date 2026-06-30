@@ -118,6 +118,7 @@ class App(tk.Tk):
             self.geometry(f"+{wx}+{wy}")
         else:
             self.geometry(f"+{(sw-w)//2}+{(sh-h)//2}")
+        self._fix_taskbar()
         self._refresh_ports()
         self._start_osc()
         self._tick()
@@ -372,6 +373,22 @@ class App(tk.Tk):
             os.chmod(path, 0o755)
         subprocess.Popen([path])
         self.after(500, self._on_close)
+
+    # ── Taskbar icon ──────────────────────────────────────────────────────────
+    def _fix_taskbar(self):
+        if os.name != "nt":
+            return
+        import ctypes
+        self.update_idletasks()
+        hwnd = self.winfo_id()
+        GWL_EXSTYLE      = -20
+        WS_EX_APPWINDOW  = 0x00040000
+        WS_EX_TOOLWINDOW = 0x00000080
+        style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        style = (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
+        ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+        self.wm_withdraw()
+        self.after(10, self.wm_deiconify)
 
     # ── Linux serial port permissions ────────────────────────────────────────
     def _check_linux_serial_perms(self):
