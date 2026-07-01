@@ -26,6 +26,17 @@ jobs:
       - name: Install dependencies
         run: pip install pyserial python-osc pyinstaller
 
+      - name: Inject version from tag
+        run: |
+          $tag = if ("${{ github.ref_name }}" -match "^v") { "${{ github.ref_name }}" } else { "v0.0.0-dev" }
+          $ver = $tag.TrimStart('v')
+          (Get-Content heatpett_server.py) `
+            -replace 'SERVER_VERSION\s*=\s*"[^"]*"', "SERVER_VERSION = `"$tag`"" |
+            Set-Content heatpett_server.py
+          (Get-Content installer.iss) `
+            -replace '#define MyAppVersion "[^"]*"', "#define MyAppVersion `"$ver`"" |
+            Set-Content installer.iss
+
       - name: Build exe with PyInstaller
         run: pyinstaller --onefile --windowed --icon=icon.ico --name="Headpat Server" heatpett_server.py
 
@@ -65,6 +76,12 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install pyserial python-osc pyinstaller
+
+      - name: Inject version from tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" =~ ^v ]]; then VERSION="$TAG"; else VERSION="v0.0.0-dev"; fi
+          sed -i "s/SERVER_VERSION\s*=\s*\"[^\"]*\"/SERVER_VERSION = \"$VERSION\"/" heatpett_server.py
 
       - name: Build with PyInstaller
         run: pyinstaller --onedir --windowed --name="HeadpatServer" --icon=icon.png heatpett_server.py
