@@ -386,22 +386,22 @@ class App(tk.Tk):
             return
 
         if key == "dongle":
-            port = self._port_var.get()
-            if port and SERIAL_OK:
-                self._log("Dongle Bootloader wird gestartet…", "info")
-                self._disconnect()
+            with self._ser_lock:
+                ser = self._ser
+            if ser:
                 try:
-                    s = serial.Serial(port, 1200)
-                    s.close()
-                    self._log("1200bps Touch gesendet — warte auf Laufwerk…", "info")
+                    ser.write(b"dfu\n")
+                    self._log("DFU-Befehl gesendet — Dongle startet Bootloader…", "info")
+                    self.after(500, self._disconnect)
                 except Exception as e:
-                    self._log(f"Bootloader-Start fehlgeschlagen: {e}", "err")
+                    self._log(f"DFU-Befehl fehlgeschlagen: {e}", "err")
             else:
                 tk.messagebox.showinfo(
                     "Dongle Update",
-                    "Dongle nicht verbunden.\n\nBitte den Dongle doppelt resetten\n"
-                    "(Reset-Button 2× schnell drücken)\n"
-                    "dann erscheint er als Laufwerk und wird automatisch geflasht.",
+                    "Dongle nicht verbunden.\n\n"
+                    "Bitte verbinden und nochmal versuchen,\n"
+                    "oder den Reset-Button 2× schnell drücken\n"
+                    "damit der Dongle als Laufwerk erscheint.",
                     parent=self)
         else:
             tk.messagebox.showinfo(
