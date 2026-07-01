@@ -119,7 +119,7 @@ class App(tk.Tk):
             self.geometry(f"+{wx}+{wy}")
         else:
             self.geometry(f"+{(sw-w)//2}+{(sh-h)//2}")
-        self._fix_taskbar()
+        self.after(200, self._fix_taskbar)
         self._refresh_ports()
         self._start_osc()
         self._tick()
@@ -427,16 +427,24 @@ class App(tk.Tk):
         if os.name != "nt":
             return
         import ctypes
-        self.update_idletasks()
-        hwnd = self.winfo_id()
+        # GA_ROOT=2 liefert den echten Top-Level-HWND (winfo_id gibt nur das Tk-Child zurück)
+        hwnd = ctypes.windll.user32.GetAncestor(self.winfo_id(), 2)
         GWL_EXSTYLE      = -20
         WS_EX_APPWINDOW  = 0x00040000
         WS_EX_TOOLWINDOW = 0x00000080
+        SWP_NOMOVE       = 0x0002
+        SWP_NOSIZE       = 0x0001
+        SWP_NOZORDER     = 0x0004
+        SWP_FRAMECHANGED = 0x0020
         style = ctypes.windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
         style = (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
         ctypes.windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, style)
+        ctypes.windll.user32.SetWindowPos(
+            hwnd, 0, 0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED
+        )
         self.wm_withdraw()
-        self.after(10, self.wm_deiconify)
+        self.after(50, self.wm_deiconify)
 
     # ── Linux serial port permissions ────────────────────────────────────────
     def _check_linux_serial_perms(self):
